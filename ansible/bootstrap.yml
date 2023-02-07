@@ -1,5 +1,5 @@
 ---
-- name: dev-machine
+- name: Fedora Workstation Bootstrap
   hosts: localhost
   tasks:
     - name: Check for flathub deny-list
@@ -11,10 +11,10 @@
     - name: Purge flathub if deny list exists
       become: true
       community.general.flatpak_remote:
-         name: flathub
-         state: absent
+        name: flathub
+        state: absent
       when: flathub_filter.stat.exists
-    
+
     - name: Add the flathub remote
       community.general.flatpak_remote:
         name: flathub
@@ -23,9 +23,8 @@
 
     - name: Remove deny list
       become: true
-      ansible.builtin.file:
-         path: /usr/share/flatpak/fedora-flathub.filter
-         dest: /usr/share/flatpak/fedora-flathub.filter.old
+      ansible.builtin.shell: |
+         mv /usr/share/flatpak/fedora-flathub.filter /usr/share/flatpak/fedora-flathub.filter.old
       when: flathub_filter.stat.exists
 
     - name: Install flatpaks
@@ -38,10 +37,11 @@
           - net.ankiweb.Anki
           - com.spotify.Client
           - com.slack.Slack
+          - io.podman_desktop.PodmanDesktop
           - us.zoom.Zoom
         state: present
 
-    - name: add 1password yum repository
+    - name: Add 1password yum repository
       become: true
       ansible.builtin.yum_repository:
         state: present
@@ -52,7 +52,7 @@
         gpgcheck: 1
         gpgkey: https://downloads.1password.com/linux/keys/1password.asc
 
-    - name: add vscode yum repository
+    - name: Add vscode yum repository
       become: true
       ansible.builtin.yum_repository:
         state: present
@@ -68,21 +68,23 @@
       ansible.builtin.dnf:
         name:
           - 1password
+          - buildah
           - code
           - distrobox
           - logiops
           - NetworkManager-l2tp.x86_64
           - NetworkManager-l2tp-gnome.x86_64
+          # mocks docker commands:
+          # https://podman-desktop.io/docs/migrating-from-docker/emulating-docker-cli-with-podman
+          - podman-docker
+          - podman-compose
           - strongswan
           - xl2tpd
         state: present
- 
+
     - name: Enable logid.service
       become: true
       ansible.builtin.systemd:
         name: logid.service
         enabled: true
         state: started
-
-    - name: Create Arch Dev machine
-      
