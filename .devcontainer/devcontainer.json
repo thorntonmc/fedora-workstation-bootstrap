@@ -1,0 +1,12 @@
+{
+	"dockerFile": "Dockerfile",
+	"privileged": true,
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"redhat.ansible",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
+}
